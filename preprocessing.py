@@ -1,3 +1,4 @@
+'''Функции для предобработки данных'''
 import pandas as pd
 import numpy as np
 
@@ -7,23 +8,15 @@ def make_harmonic_features(val, period):
   val = val * 2 * np.pi / period
   return np.sin(val), np.cos(val)
 
-'''
-  Предобработка и генерация новых признаков
 
-  аргументы:
-  df -- DataFrame, столбцы ['Дата', 'A+']
-  возвращает:
-  X -- np.array массив признаков
-  Y -- np.array массив целевых значений
-  '''
 def get_time_feature(df):
   '''Выделение пропусков
 
     аргументы:
     df -- DataFrame, столбцы ['Дата', 'A+']
     возвращает:
-    train_data -- DataFrame, столбцы ['Дата', 'A_prev', 'A+']
-    target_data -- DataFrame, столбцы ['Дата', 'A_prev', 'A+']
+    X -- np.array массив признаков
+    Y -- np.array массив целевых значений
     '''
   month = df['Дата'].dt.month.to_numpy()
   dayofweek = df['Дата'].dt.dayofweek.to_numpy()
@@ -43,10 +36,20 @@ def get_time_feature(df):
 
 
 def preprocess_data(df):
+  '''Формирует обучающий и целевой набор данных
+
+    аргументы:
+    df -- DataFrame, столбцы ['Дата', 'A+']
+
+    возвращает:
+    all_data -- все данные
+    train_data -- обучающие данные
+    target_data -- целевые данные
+  '''
   df.loc[(df['A+'] == '-'), 'A+'] = np.NaN
   A_mean = df['A+'].mean()
   A_prev = df['A+'][:-1]
-  all_data = df.reset_index(drop=True);
+  all_data = df.reset_index(drop=True)
   df = df[1:].reset_index(drop=True)
   df.insert(loc=2, column='A_prev', value=A_prev)
   all_data.insert(loc=2, column='A_prev', value=A_prev)
@@ -58,7 +61,7 @@ def preprocess_data(df):
   all_data['A_prev'].fillna(A_mean, inplace=True)
   all_data = all_data[all_data['A+'].notna()]
 
-  return all_data,train_data, target_data
+  return all_data, train_data, target_data
 
 
 def read_file(filename):

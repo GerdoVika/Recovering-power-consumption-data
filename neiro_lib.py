@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Функции для работы с нейросетью
-ver 1.2
+
 """
 import torch
 import torch.nn as nn
 import numpy as np
 
 
-count_parametrs  = 7 #(количество параметров)
+count_parametrs  = 7
 
-# структура нейросети
 def init_model() :
   model = torch.nn.Sequential(
   torch.nn.Linear(count_parametrs, 100),
@@ -34,7 +32,7 @@ def load_model(path, model):
   model.eval()
   return model
 
-# сохранение весов нейросети
+
 def save_model(path, model):
   torch.save(model.state_dict(), path)
 
@@ -63,37 +61,33 @@ X_train,Y_train - выборка для обучения
 def train_model(X_train,Y_train,model):
   err = 10;
 
-  # Вводим функцию ошибки
   criterion = torch.nn.MSELoss(reduction='mean')
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-  #Перевод из типа nympy array в tensor pycharm
+
   X_train_torch = torch.from_numpy(X_train).float()
   Y_train_torch = torch.from_numpy(Y_train).float()
-  # Вычисление через видеокарту
+
   if torch.cuda.is_available():
     model = model.cuda()
     X_train_torch, Y_train_torch = X_train_torch.cuda(), Y_train_torch.cuda()
   output = model(X_train_torch[1,:])
   loss = criterion(output, torch.reshape(Y_train_torch, (len(Y_train_torch), 1)))
-  epoch = 0 #Количество итераций
+  epoch = 0
+
   print("Производится обучение")
   while loss>=err:
     epoch = epoch+1
     output = model(X_train_torch)
     loss = criterion(output, torch.reshape(Y_train_torch, (len(Y_train_torch), 1)))
-    # if (np.mod(epoch, 10) == 0):
-    # print('Epoch: ', epoch, 'Loss: ', loss.item()) #Вывод в консоль точность впроцессе обучения
-    optimizer.zero_grad()#Шаг по градиентному спуску
+    optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    #Ограничение на количество итераций
     if epoch>=1000:
       break
-  # Сохранение модели после обучения
+
   save_model(__file__[0:-13] + "\model", model)
 
 
-#при желании создать пустую нейросеть - выполниить файл neiro_lib.py
 if __name__ == '__main__':
   model = init_model()
   save_model(__file__[0:-13]+"\model",model)

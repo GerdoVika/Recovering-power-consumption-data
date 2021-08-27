@@ -16,7 +16,7 @@ def main():
     input_file, output_file = get_filename()
     df = preprocessing.read_file(input_file)
 
-    all_data,train_data, target_data = preprocessing.preprocess_data(df)
+    all_data, train_data, target_data = preprocessing.preprocess_data(df)
 
     X_train, Y_train = preprocessing.get_time_feature(train_data)
     X, Y = preprocessing.get_time_feature(target_data)
